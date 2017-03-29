@@ -1,0 +1,74 @@
+```{r}
+SalaryData <- read.csv("C:/Users/shaik.a/Desktop/Bank/test2.csv")
+sdSalary <- sd(SalaryData$sl)
+MeanSalary <- mean(SalaryData$sl)
+OutlierB <- MeanSalary-3*sdSalary
+OutlierT <- MeanSalary+3*sdSalary
+```
+```{r}
+summary(SalaryData$sl)
+OutlierB
+OutlierT
+```
+```{r}
+print("There are no outliers in this dataset in salary")
+```
+
+```{r}
+#Classifying the data into three subsets based on Rank of the teacher
+ProfData <- subset(SalaryData, rk == 3)
+AssisData <- subset(SalaryData, rk == 2)
+LectData <- subset(SalaryData, rk == 1)
+
+#Visually verifying the salaries against gender in each of the teacher ranks
+boxplot(ProfData$sl~ProfData$sx, ylab="Salary", xlab="Gender", col=c("Orange", "Green"))
+boxplot(AssisData$sl~AssisData$sx, ylab="Salary", xlab="Gender", col=c("Orange", "Green"))
+boxplot(LectData$sl~LectData$sx, ylab="Salary", xlab="Gender", col=c("Orange", "Green"))
+```
+```{r}
+#Calculating Average salaries in Professor Rank
+tapply(ProfData$sl, ProfData$sx, mean)
+
+```
+
+```{r}
+#Calulating Proportion of salaries
+28805/29872.44
+```
+```{r}
+#Calculating Average salaries in Assistant Rank
+tapply(AssisData$sl, AssisData$sx, mean)
+```
+
+```{r}
+#Calulating Proportion of salaries
+21570/23443.58
+```
+```{r}
+#Calculating Average salaries in Lecturer Rank
+tapply(LectData$sl, LectData$sx, mean)
+```
+```{r}
+#Calulating Proportion of salaries
+17580/17919.6
+```
+```{r}
+print(c("At full professor level, an average female is reciving 96.42% of the salary an average male receives.", "At Assistant level, an average female is reciving 92% of the salary an average male receives.", "At Lecturerer level, an average female is reciving 98.1% of the salary an average male receives."))
+```
+```{r}
+Prof <- tapply(ProfData$yr, ProfData$sx, mean)
+Assis <- tapply(AssisData$yr, AssisData$sx, mean)
+Lect <- tapply(LectData$yr, LectData$sx, mean)
+Exp <- cbind(Prof, Assis, Lect)
+Exp
+```
+```{r}
+barplot(Exp, beside = TRUE, main = "Experience level according to Gender", ylab = "Experience in Years", xlab = "Rank of the person" ,col=c("Orange", "green"), legend = rownames(Exp))
+```
+
+
+```{r}
+print("Conclusion: In all ranks of teachers, It is observed that an average female has low experiance when compared to an averae male. This might be the reason behind the low avaerage salary of females.Hence there is no discrimation of salaries of teachers in a college")
+
+```
+

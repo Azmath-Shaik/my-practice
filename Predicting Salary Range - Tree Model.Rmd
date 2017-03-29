@@ -1,0 +1,148 @@
+---
+title: "AV Workshop - Model Building - Predicting salary range of a person"
+---
+```{r}
+train <- read.csv("D:/Academic Data/Trimester 3/EDA/Practice/AV Workshop/train.csv")
+test <- read.csv("D:/Academic Data/Trimester 3/EDA/Practice/AV Workshop/test.csv")
+```
+
+```{r}
+#Univariate Analysis
+str(train)
+```
+
+```{r}
+#Separating Continuous and categorical variables
+train.con <- subset(train, select = c(ID, Age, Hours.Per.Week))
+train.cat <- subset(train, select = -c(ID, Age, Hours.Per.Week))
+```
+
+```{r}
+#Summary of Continous
+summary(train.con)
+```
+
+```{r}
+#Let's go into details
+library(pastecs)
+library(boot)
+stat.desc(train.con)
+```
+```{r}
+apply(train.cat, 2, function(x){length(unique(x))})
+```
+```{r}
+#Analyzing Race
+#Prints the counts of each category
+table(train.cat$Race)
+```
+```{r}
+#Checking the percentage of observations in each category
+as.matrix((prop.table(table(train.cat$Race))))
+```
+```{r}
+#Checking count top 20 countries
+head(sort(table(train.cat$Native.Country), decreasing = TRUE), 20)
+```
+```{r}
+#Checking the percentage of observations in each category
+as.matrix(head(round(sort(prop.table(table(train.cat$Native.Country)), decreasing = TRUE),6),20))
+```
+```{r}
+library(gmodels)
+CrossTable(train.cat$Sex, train.cat$Income.Group)
+```
+```{r}
+library(ggplot2)
+ggplot(train, aes(Sex, fill = Income.Group)) + geom_bar()+labs(title = "Stacked Bar Chart", x="Sex", y="Count") + theme_bw()
+```
+```{r}
+ggplot(train, aes(Sex, Hours.Per.Week))+geom_boxplot()+labs(title="Boxplot")
+```
+```{r}
+#Check the number of missig values in the complete dataset
+table(is.na(train))
+```
+```{r}
+#Checking missing values column wise in train data set
+colSums(is.na(train))
+```
+```{r}
+#Checking missing values column wise in test data set
+colSums(is.na(test))
+```
+```{r}
+#imputing missing values with mode
+library(mlr)
+imputed_data <- impute(train, classes = list(factor= imputeMode()))
+```
+
+```{r}
+#Updating train data set with imputed values
+train <- imputed_data$data
+#Checking the missing values again to confirm
+colSums(is.na(train))
+```
+```{r}
+imputed_test_data <- impute(test, classes = list(factor= imputeMode()))
+test <- imputed_test_data$data
+colSums(is.na(test))
+```
+```{r}
+#Checking for outliers in age
+plot(train$ID, train$Age)
+```
+```{r}
+#Checking outliers in Hours.Per.Week
+plot(train$ID, train$Hours.Per.Week)
+```
+```{r}
+library(car)
+train$Workclass <- recode(train$Workclass, "c('State-gov', 'Self-emp-inc', 'Federal-gov', 'Without-pay', 'Never-worked')= 'Others'")
+test$Workclass <- recode(test$Workclass, "c('State-gov', 'Self-emp-inc', 'Federal-gov', 'Without-pay', 'Never-worked')= 'Others'")
+```
+
+```{r}
+as.matrix(prop.table(table(train$Workclass)))
+```
+```{r}
+table(train$Income.Group)
+```
+```{r}
+train$Income.Group <- ifelse(train$Income.Group == "<=50K", 0, 1)
+table(train$Income.Group)
+```
+```{r}
+train <- subset(train, select = -c(ID))
+```
+```{r}
+library(rpart)
+set.seed(333)
+train.tree <- rpart(Income.Group ~ ., data = train, method = "class", control = rpart.control(minsplit = 20, minbucket = 100, maxdepth = 10), xval = 5)
+summary(train.tree)
+```
+```{r}
+library(rpart.plot)
+```
+```{r}
+rpart.plot(train.tree)
+```
+```{r}
+
+prediction_train <- predict(train.tree, newdata = train, type = "class")
+prediction_test <- predict(train.tree, newdata = test, type = "class")
+```
+
+```{r}
+library(caret)
+library(e1071)
+confusionMatrix(prediction_train, train$Income.Group)
+```
+```{r}
+solution_frame <- data.frame(ID = test$ID, Income.Group = prediction_test)
+write.csv(solution_frame, file="D:/Academic Data/Trimester 3/EDA/Practice/AV Workshop/final_solution.csv")
+```
+
+
+
+

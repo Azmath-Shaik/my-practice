@@ -1,0 +1,28 @@
+newdata <- data.frame
+```{r}
+newdata<- data.frame(ozone = airquality$Ozone, solar = airquality$Solar.R, wind = airquality$Wind, temp = airquality$Temp)
+head(newdata)
+```
+```{r}
+plot(newdata)
+```
+```{r}
+#correlation along with treating missing values
+cor(newdata, use="pairwise.complete.obs")
+```
+```{r}
+r.values <- cor(newdata, use = "pairwise.complete.obs")
+m1 <- lm(temp ~ ozone + solar + wind, data = newdata)
+summary(m1)
+```
+```{r}
+#introducing interactions
+m2 <- lm(temp ~ ozone * solar + wind, data = newdata)
+summary(m2)
+```
+```{r}
+#introducing interactions
+m3 <- lm(temp ~ ozone * solar * wind, data = newdata)
+summary(m3)
+```
+Therefor by using interactions, R-squared increased frm 0.5 to 0.57.
